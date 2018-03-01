@@ -352,13 +352,29 @@ void handle_button() {
   else if(task == "random")
   {
     message += "{random}";
-    char mem[100];
+    char mem[1024];
     char *tvalue = mem;
-    strncpy(mem,value.c_str(),sizeof(value));
-    const char *range1 = strtok(tvalue,"-");
-    const char *range2 = strtok(NULL,"-");
-    int newchannel = random(max(atoi(range1),1),min(atoi(range2)+1,5000));
-    set_channel(String(newchannel), &message);
+    strncpy(mem,value.c_str(),min(1024,sizeof(value)));
+    if(strchr(tvalue,'-'))
+    {
+      const char *range1 = strtok(tvalue,"-");
+      const char *range2 = strtok(NULL,"-");
+      int newchannel = random(max(atoi(range1),1),min(atoi(range2)+1,5000));
+      set_channel(String(newchannel), &message);
+    }
+    else if(strchr(tvalue,','))
+    {
+      const char *channels[100];
+      int ccount = 0;
+      const char *token;
+      channels[ccount++] = token = strtok(tvalue,",");
+      while(token && ccount < 100)
+      {
+        channels[ccount++] = token = strtok(NULL,",");
+      }
+      const char *newchannel = channels[random(0,ccount-1)];
+      set_channel(String(newchannel), &message);
+    }
   }
   else
   {
@@ -407,4 +423,3 @@ void loop() {
   delay(500);
   server.handleClient();
 }
-
